@@ -37,14 +37,15 @@ function Segmented<T extends string>({
 }
 
 export function AlertsPanel({
-  alerts, selectedId, onSelect, onShowInGraph,
+  alerts, selectedId, onSelect, onShowInGraph, initialCategory = "all",
 }: {
   alerts: Alert[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onShowInGraph: (id: string) => void;
+  initialCategory?: Category | "all";
 }) {
-  const [category, setCategory] = useState<Category | "all">("all");
+  const [category, setCategory] = useState<Category | "all">(initialCategory);
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [sort, setSort] = useState<SortKey>("severity");
 

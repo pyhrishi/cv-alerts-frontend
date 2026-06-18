@@ -1,8 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
+import type { Category } from "@/lib/types";
 import { AlertsPanel } from "@/components/AlertsPanel";
 import { KpiStrip } from "@/components/KpiStrip";
 import { ReportsTable } from "@/components/ReportsTable";
@@ -25,7 +28,23 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "trends", label: "Trends" },
 ];
 
+// useSearchParams() needs a Suspense boundary for static prerender.
 export default function Page() {
+  return (
+    <Suspense fallback={<div className="flex h-screen flex-col overflow-hidden"><Header /><DashboardSkeleton /></div>}>
+      <Dashboard />
+    </Suspense>
+  );
+}
+
+const DEEP_LINK_CATEGORIES = ["security", "operations", "custom"];
+
+function Dashboard() {
+  const params = useSearchParams();
+  const catParam = params.get("category");
+  const initialCategory: Category | "all" =
+    catParam && DEEP_LINK_CATEGORIES.includes(catParam) ? (catParam as Category) : "all";
+
   const { data, status, error, lastUpdated, refresh } = useDashboardData();
   const [tab, setTab] = useState<Tab>("alerts");
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
@@ -73,6 +92,12 @@ export default function Page() {
                 {tab === t.id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded bg-ot-accent" />}
               </button>
             ))}
+            <Link
+              href="/case-study"
+              className="ml-auto self-center rounded-md border border-ot-line px-3 py-1 text-sm font-medium text-ot-accent hover:bg-ot-hover"
+            >
+              Case study ↗
+            </Link>
           </nav>
 
           <main className="min-h-0 flex-1 overflow-auto p-5">
@@ -83,6 +108,7 @@ export default function Page() {
                   selectedId={selectedAlertId}
                   onSelect={setSelectedAlertId}
                   onShowInGraph={showInGraph}
+                  initialCategory={initialCategory}
                 />
               </div>
             )}
